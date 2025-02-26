@@ -2,38 +2,19 @@
   <div class="chord-input-container">
     <div class="selected-chords" @dragover.prevent @drop="onDrop">
       <TransitionGroup name="tag" tag="div" class="tag-container">
-        <div
-          v-for="(selectedChord, index) in selectedChords"
-          :key="selectedChord + index"
-          class="chord-tag"
-          draggable="true"
-          @dragstart="startDrag($event, index)"
-          @dragover.prevent
-          @dragenter.prevent
-        >
+        <div v-for="(selectedChord, index) in selectedChords" :key="selectedChord + index" class="chord-tag"
+          draggable="true" @dragstart="startDrag($event, index)" @dragover.prevent @dragenter.prevent>
           {{ selectedChord }}
           <span class="remove-chord" @click="removeChord(index)">×</span>
         </div>
       </TransitionGroup>
-      <input
-        type="text"
-        placeholder="Search for a chord..."
-        v-model="searchText"
-        @input="searchChords"
-        @keydown.backspace="handleBackspace"
-        @keydown.enter="handleEnter"
-        ref="searchInput"
-      />
+      <input type="text" placeholder="Search for a chord..." v-model="searchText" @input="searchChords"
+        @keydown.backspace="handleBackspace" @keydown.enter="handleEnter" ref="searchInput" />
     </div>
 
     <transition name="fade">
       <div class="search-results" v-if="filteredChords.length && searchText">
-        <div
-          v-for="chord in filteredChords"
-          :key="chord"
-          class="chord-result"
-          @click="addChord(chord)"
-        >
+        <div v-for="chord in filteredChords" :key="chord" class="chord-result" @click="addChord(chord)">
           {{ chord }}
         </div>
       </div>
@@ -86,11 +67,14 @@ const availableChords = computed(() => {
 const filteredChords = computed(() => {
   if (!searchText.value) return []
 
-  return availableChords.value.filter(
+  const filtered = availableChords.value.filter(
     (chord) =>
       chord.toLowerCase().includes(searchText.value.toLowerCase()) &&
       !selectedChords.value.includes(chord),
   )
+
+  // Limit the number of results to prevent overflow
+  return filtered.slice(0, 20)
 })
 
 // Methods
@@ -173,6 +157,7 @@ function findDropPosition(event, elements) {
 .chord-input-container {
   width: 100%;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .selected-chords {
@@ -197,8 +182,10 @@ function findDropPosition(event, elements) {
 .chord-tag {
   display: flex;
   align-items: center;
-  background-color: #e3f2fd; /* Light blue background */
-  color: #1976d2; /* Blue text */
+  background-color: #e3f2fd;
+  /* Light blue background */
+  color: #1976d2;
+  /* Blue text */
   padding: 4px 8px;
   border-radius: 16px;
   font-size: 14px;
@@ -240,47 +227,33 @@ input {
 
 .search-results {
   position: absolute;
-  width: calc(100% - 32px);
-  max-height: 200px;
+  width: 100%;
+  max-height: 300px;
   overflow-y: auto;
   background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 100;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 5px;
+  padding: 10px;
 }
 
 .chord-result {
   padding: 8px 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .chord-result:hover {
   background-color: #f5f5f5;
 }
 
-/* Tag Animations */
-.tag-enter-active,
-.tag-leave-active {
-  transition: all 0.3s ease;
-}
-
-.tag-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.tag-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.tag-move {
-  transition: transform 0.5s ease;
-}
-
-/* Fade animation for search results */
+/* Fade transition */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -289,5 +262,17 @@ input {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Tag transition */
+.tag-enter-active,
+.tag-leave-active {
+  transition: all 0.3s ease;
+}
+
+.tag-enter-from,
+.tag-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 </style>
