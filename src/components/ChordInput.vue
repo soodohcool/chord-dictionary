@@ -1,21 +1,30 @@
 <template>
-  <div class="chord-input-container">
+  <div class="chord-input-container" ref="containerRef">
     <div class="selected-chords" @dragover.prevent @drop="onDrop">
       <TransitionGroup name="tag" tag="div" class="tag-container">
-        <div v-for="(selectedChord, index) in selectedChords" :key="selectedChord + index" class="chord-tag"
-          draggable="true" @dragstart="startDrag($event, index)" @dragover.prevent @dragenter.prevent>
-          {{ selectedChord }}
+        <div v-for="(chord, index) in modelValue" :key="chord + index" class="chord-tag" draggable="true"
+          @dragstart="startDrag($event, index)" @dragover.prevent @dragenter.prevent>
+          {{ chord }}
           <span class="remove-chord" @click="removeChord(index)">×</span>
         </div>
       </TransitionGroup>
       <input type="text" placeholder="Search for a chord..." v-model="searchText" @input="searchChords"
-        @keydown.backspace="handleBackspace" @keydown.enter="handleEnter" ref="searchInput" />
+        @keydown.backspace="handleBackspace" @keydown.enter="handleEnter" @focus="showResults = true" @blur="handleBlur"
+        ref="searchInput" />
     </div>
 
     <transition name="fade">
-      <div class="search-results" v-if="filteredChords.length && searchText">
-        <div v-for="chord in filteredChords" :key="chord" class="chord-result" @click="addChord(chord)">
-          {{ chord }}
+      <div class="search-results" v-if="(filteredChords.length && searchText) || showResults">
+        <div class="chord-categories">
+          <div v-for="(chords, category) in groupedFilteredChords" :key="category" class="chord-category">
+            <div class="category-title">{{ formatCategoryName(category) }}</div>
+            <div class="category-chords">
+              <div v-for="chord in chords" :key="chord" class="chord-result" @click="selectChord(chord)"
+                :class="{ 'selected': modelValue.includes(chord) }">
+                {{ chord }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </transition>
@@ -23,8 +32,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { chordDictionary } from '../chordDictionary'
+
+/**
+ * Chord input component for searching and selecting chords
+ * 
+ * @prop {Array} modelValue - Array of selected chord names
+ * @emits update:modelValue - Emitted when selected chords change
+ */
 
 // Props and emits
 const props = defineProps({
@@ -38,25 +54,10 @@ const emit = defineEmits(['update:modelValue'])
 
 // State
 const searchText = ref('')
-const selectedChords = ref([])
 const searchInput = ref(null)
 const draggedItem = ref(null)
-
-// Set initial selected chords from props
-onMounted(() => {
-  if (props.modelValue && props.modelValue.length) {
-    selectedChords.value = [...props.modelValue]
-  }
-})
-
-// Watch for changes to selected chords and emit update
-watch(
-  selectedChords,
-  (newValue) => {
-    emit('update:modelValue', newValue)
-  },
-  { deep: true },
-)
+const showResults = ref(false)
+const containerRef = ref(null)
 
 // Available chords from the dictionary
 const availableChords = computed(() => {
@@ -65,52 +66,186 @@ const availableChords = computed(() => {
 
 // Filtered chords based on search text
 const filteredChords = computed(() => {
-  if (!searchText.value) return []
+  if (!searchText.value && !showResults.value) return []
 
-  const filtered = availableChords.value.filter(
-    (chord) =>
-      chord.toLowerCase().includes(searchText.value.toLowerCase()) &&
-      !selectedChords.value.includes(chord),
-  )
+  let filtered = availableChords.value
 
-  // Limit the number of results to prevent overflow
-  return filtered.slice(0, 20)
+  if (searchText.value) {
+    filtered = filtered.filter(
+      (chord) => chord.toLowerCase().includes(searchText.value.toLowerCase())
+    )
+  }
+
+  return filtered
 })
 
-// Methods
+/**
+ * Group chords by category (Major, Minor, 7th, etc.)
+ */
+const groupedFilteredChords = computed(() => {
+  const grouped = {}
+
+  filteredChords.value.forEach(chord => {
+    let category = 'other'
+
+    if (chord.endsWith('m') && !chord.includes('maj') && !chord.includes('dim') && !chord.includes('aug')) {
+      category = 'minor'
+    } else if (chord.includes('7') && !chord.includes('maj')) {
+      category = 'seventh'
+    } else if (chord.includes('maj7')) {
+      category = 'major7'
+    } else if (chord.includes('dim')) {
+      category = 'diminished'
+    } else if (chord.includes('aug')) {
+      category = 'augmented'
+    } else if (chord.includes('sus')) {
+      category = 'suspended'
+    } else if (chord.match(/^[A-G]$/)) {
+      category = 'major'
+    }
+
+    if (!grouped[category]) {
+      grouped[category] = []
+    }
+
+    grouped[category].push(chord)
+  })
+
+  // Sort chords within each category
+  Object.keys(grouped).forEach(category => {
+    grouped[category].sort()
+  })
+
+  // Sort categories by priority
+  const sortedGrouped = {}
+  const categoryOrder = ['major', 'minor', 'seventh', 'major7', 'diminished', 'augmented', 'suspended', 'other']
+
+  categoryOrder.forEach(category => {
+    if (grouped[category] && grouped[category].length > 0) {
+      sortedGrouped[category] = grouped[category]
+    }
+  })
+
+  return sortedGrouped
+})
+
+/**
+ * Format category name for display
+ * 
+ * @param {string} category - Category name
+ * @returns {string} - Formatted category name
+ */
+function formatCategoryName(category) {
+  const nameMap = {
+    'major': 'Major',
+    'minor': 'Minor',
+    'seventh': '7th',
+    'major7': 'Major 7th',
+    'diminished': 'Diminished',
+    'augmented': 'Augmented',
+    'suspended': 'Suspended',
+    'other': 'Other'
+  }
+
+  return nameMap[category] || category
+}
+
+/**
+ * Search for chords based on input text
+ */
 function searchChords() {
   // The filtered chords are automatically updated via the computed property
+  showResults.value = true
 }
 
-function addChord(chord) {
-  if (!selectedChords.value.includes(chord)) {
-    selectedChords.value.push(chord)
+/**
+ * Select a chord from the dropdown
+ * 
+ * @param {string} chord - Chord name to select
+ */
+function selectChord(chord) {
+  if (!props.modelValue.includes(chord)) {
+    const newChords = [...props.modelValue, chord]
+    emit('update:modelValue', newChords)
     searchText.value = ''
-    searchInput.value.focus()
+    showResults.value = false
+
+    // Focus the input after the DOM has updated
+    nextTick(() => {
+      if (searchInput.value) {
+        searchInput.value.focus()
+      }
+    })
   }
 }
 
+/**
+ * Remove a chord from the selected chords
+ * 
+ * @param {number} index - Index of chord to remove
+ */
 function removeChord(index) {
-  selectedChords.value.splice(index, 1)
+  const newChords = [...props.modelValue]
+  newChords.splice(index, 1)
+  emit('update:modelValue', newChords)
 }
 
+/**
+ * Handle backspace key press
+ * 
+ * @param {Event} event - Keyboard event
+ */
 function handleBackspace(event) {
   // If search is empty and there are selected chords, remove the last chord
-  if (searchText.value === '' && selectedChords.value.length > 0) {
-    selectedChords.value.pop()
+  if (searchText.value === '' && props.modelValue.length > 0) {
+    const newChords = [...props.modelValue]
+    newChords.pop()
+    emit('update:modelValue', newChords)
     event.preventDefault()
   }
 }
 
+/**
+ * Handle enter key press
+ * 
+ * @param {Event} event - Keyboard event
+ */
 function handleEnter(event) {
   // If there's at least one search result, add the first one
-  if (filteredChords.value.length > 0) {
-    addChord(filteredChords.value[0])
+  const firstCategory = Object.keys(groupedFilteredChords.value)[0]
+  if (firstCategory && groupedFilteredChords.value[firstCategory].length > 0) {
+    selectChord(groupedFilteredChords.value[firstCategory][0])
     event.preventDefault()
   }
 }
 
-// Drag and drop functions
+/**
+ * Handle input blur
+ */
+function handleBlur() {
+  // Delay hiding results to allow for clicking on a result
+  setTimeout(() => {
+    showResults.value = false
+  }, 200)
+}
+
+/**
+ * Handle click outside the component
+ * 
+ * @param {Event} event - Click event
+ */
+function handleClickOutside(event) {
+  if (containerRef.value && !containerRef.value.contains(event.target)) {
+    showResults.value = false
+  }
+}
+
+/**
+ * Start drag operation
+ * 
+ * @param {DragEvent} event - Drag event
+ * @param {number} index - Index of chord being dragged
+ */
 function startDrag(event, index) {
   draggedItem.value = index
   // Add a visual cue that the element is being dragged
@@ -119,6 +254,11 @@ function startDrag(event, index) {
   event.dataTransfer.setData('text/plain', index)
 }
 
+/**
+ * Handle drop event for reordering chords
+ * 
+ * @param {DragEvent} event - Drop event
+ */
 function onDrop(event) {
   // Get the drop position
   const dropAreaElements = document.querySelectorAll('.chord-tag')
@@ -126,16 +266,25 @@ function onDrop(event) {
 
   // Reorder the chords
   if (draggedItem.value !== null && dropPosition !== null) {
-    const item = selectedChords.value[draggedItem.value]
+    const newChords = [...props.modelValue]
+    const item = newChords[draggedItem.value]
     // Remove from original position
-    selectedChords.value.splice(draggedItem.value, 1)
+    newChords.splice(draggedItem.value, 1)
     // Add at new position
-    selectedChords.value.splice(dropPosition, 0, item)
+    newChords.splice(dropPosition, 0, item)
+    emit('update:modelValue', newChords)
   }
 
   draggedItem.value = null
 }
 
+/**
+ * Find the position to drop a chord
+ * 
+ * @param {DragEvent} event - Drop event
+ * @param {NodeList} elements - List of chord tag elements
+ * @returns {number} - Index to drop at
+ */
 function findDropPosition(event, elements) {
   // Find the closest element to the drop position
   for (let i = 0; i < elements.length; i++) {
@@ -151,9 +300,19 @@ function findDropPosition(event, elements) {
   // If we're after all elements, append to the end
   return elements.length
 }
+
+// Add event listener for clicks outside the component
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+// Remove event listener when component is unmounted
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
-<style>
+<style scoped>
 .chord-input-container {
   width: 100%;
   margin-bottom: 20px;
@@ -183,9 +342,7 @@ function findDropPosition(event, elements) {
   display: flex;
   align-items: center;
   background-color: #e3f2fd;
-  /* Light blue background */
   color: #1976d2;
-  /* Blue text */
   padding: 4px 8px;
   border-radius: 16px;
   font-size: 14px;
@@ -194,14 +351,17 @@ function findDropPosition(event, elements) {
   user-select: none;
   transition: all 0.3s ease;
   will-change: transform, opacity;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .chord-tag:active {
   cursor: grabbing;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .chord-tag:hover {
   background-color: #bbdefb;
+  transform: translateY(-1px);
 }
 
 .remove-chord {
@@ -210,10 +370,17 @@ function findDropPosition(event, elements) {
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
 }
 
 .remove-chord:hover {
   opacity: 1;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 input {
@@ -228,29 +395,60 @@ input {
 .search-results {
   position: absolute;
   width: 100%;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
   background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 5px;
   padding: 10px;
+}
+
+.chord-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chord-category {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.category-title {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  padding: 0 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.category-chords {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 5px;
 }
 
 .chord-result {
   padding: 8px 12px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   border-radius: 4px;
   text-align: center;
+  background-color: #f5f5f5;
+  font-size: 14px;
 }
 
 .chord-result:hover {
-  background-color: #f5f5f5;
+  background-color: #e3f2fd;
+  transform: translateY(-1px);
+}
+
+.chord-result.selected {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* Fade transition */

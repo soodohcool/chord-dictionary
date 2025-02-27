@@ -1,6 +1,12 @@
+/* Global box-sizing rule */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
+  margin: 0;
 }
 
 .input-container {
@@ -35,7 +41,7 @@ button:hover {
 
 .chord-container {
   text-align: center;
-  width: 180px;
+  width: 200px;
 }
 
 .chord-name {
@@ -94,7 +100,6 @@ button:hover {
   height: 20px;
   border-radius: 50%;
   border: 2px solid #000;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;

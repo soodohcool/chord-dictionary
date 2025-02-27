@@ -2,43 +2,26 @@
   <div class="fretboard-container">
     <div class="fretboard">
       <!-- Strings (vertical lines) -->
-      <div
-        v-for="stringIndex in 6"
-        :key="'string-' + stringIndex"
-        :class="'string string-' + stringIndex"
-        :style="{ left: `${(stringIndex - 1) * 20}%` }"
-      ></div>
+      <div v-for="stringIndex in 6" :key="'string-' + stringIndex" :class="'string string-' + stringIndex"
+        :style="{ left: `${(stringIndex - 1) * 20}%` }"></div>
 
       <!-- Frets (horizontal lines) -->
-      <div
-        v-for="fretNum in 5"
-        :key="'fret-' + fretNum"
-        class="fret"
-        :style="{ top: `${fretNum * 20}%` }"
-      ></div>
+      <div v-for="fretNum in 5" :key="'fret-' + fretNum" class="fret" :style="{ top: `${fretNum * 20}%` }"></div>
 
       <!-- Finger positions rendered directly -->
       <template v-if="fingerPositions.length">
-        <div
-          v-for="(fingerData, idx) in fingerPositions"
-          :key="'finger-' + idx"
-          :class="['finger', getFingerClass(fingerData.finger)]"
-          :style="{
+        <div v-for="(fingerData, idx) in fingerPositions" :key="'finger-' + idx"
+          :class="['finger', getFingerClass(fingerData.finger)]" :style="{
             left: `${(6 - fingerData.string) * 20}%`,
-            top: `${(fingerData.fret - 0.5) * 20}%`,
-          }"
-        >
+            top: `${((fingerData.fret - 1) * 20) + 10}%`,
+          }">
           {{ fingerData.finger }}
         </div>
       </template>
 
       <!-- String labels at the bottom -->
-      <div
-        v-for="(label, index) in stringLabels"
-        :key="'label-' + index"
-        class="string-label"
-        :style="{ left: `${index * 20}%` }"
-      >
+      <div v-for="(label, index) in stringLabels" :key="'label-' + index" class="string-label"
+        :style="{ left: `${index * 20}%` }">
         {{ label }}
       </div>
     </div>
@@ -106,7 +89,8 @@ function getFingerClass(finger) {
   border-radius: 0px;
   margin: 10px 0 0 0;
   top: 0;
-  padding-bottom: 20px; /* Add space for the labels */
+  padding-bottom: 20px;
+  /* Add space for the labels */
 }
 
 .string {
@@ -114,22 +98,27 @@ function getFingerClass(finger) {
   top: 0px;
   height: 100%;
   background-color: #777;
-  transform: translateX(-50%); /* Center the line */
+  transform: translateX(-50%);
+  /* Center the line */
 }
 
 .string.string-1 {
   width: 6px;
   left: calc(0% + 2px) !important;
 }
+
 .string.string-2 {
   width: 5px;
 }
+
 .string.string-3 {
   width: 4px;
 }
+
 .string.string-4 {
   width: 3px;
 }
+
 .string.string-5 {
   width: 2px;
 }
@@ -140,7 +129,8 @@ function getFingerClass(finger) {
   width: 100%;
   height: 1px;
   background-color: #777;
-  transform: translateY(-50%); /* Center the line */
+  transform: translateY(-50%);
+  /* Center the line */
 }
 
 .finger {
@@ -154,35 +144,42 @@ function getFingerClass(finger) {
   justify-content: center;
   font-size: 14px;
   font-weight: bold;
-  transform: translate(-50%, -50%); /* Center the dot on the intersection */
+  transform: translate(-50%, -50%);
+  /* Center the dot on the intersection */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   z-index: 10;
-  background-color: #333; /* Default color */
+  background-color: #333;
+  /* Default color */
 }
 
 .finger-1 {
-  background-color: #9c27b0 !important; /* Purple for index finger */
+  background-color: #9c27b0 !important;
+  /* Purple for index finger */
 }
 
 .finger-2 {
-  background-color: #ff9800 !important; /* Orange for middle finger */
-  transform: translateX(calc(-50% + 2px));
+  background-color: #ff9800 !important;
+  /* Orange for middle finger */
 }
 
 .finger-3 {
-  background-color: #4caf50 !important; /* Green for ring finger */
+  background-color: #4caf50 !important;
+  /* Green for ring finger */
 }
 
 .finger-4 {
-  background-color: #ff4081 !important; /* Bright pink for pinky finger */
+  background-color: #ff4081 !important;
+  /* Bright pink for pinky finger */
 }
 
 .string-label {
   position: absolute;
-  bottom: -20px; /* Position below the fretboard */
+  bottom: -20px;
+  /* Position below the fretboard */
   transform: translateX(-50%);
   font-size: 12px;
-  color: #999; /* Same color as strings */
+  color: #999;
+  /* Same color as strings */
   font-weight: normal;
 }
 </style>

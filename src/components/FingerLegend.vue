@@ -74,18 +74,22 @@
 }
 
 .finger-1 {
-  background-color: #9c27b0 !important; /* Purple for index finger */
+  background-color: #9c27b0 !important;
+  /* Purple for index finger */
 }
 
 .finger-2 {
-  background-color: #ff9800 !important; /* Orange for middle finger */
+  background-color: #ff9800 !important;
+  /* Orange for middle finger */
 }
 
 .finger-3 {
-  background-color: #4caf50 !important; /* Green for ring finger */
+  background-color: #4caf50 !important;
+  /* Green for ring finger */
 }
 
 .finger-4 {
-  background-color: #ff4081 !important; /* Bright pink for pinky finger */
+  background-color: #ff4081 !important;
+  /* Bright pink for pinky finger */
 }
 </style>

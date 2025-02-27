@@ -4,11 +4,7 @@
     <div v-if="!chordInfo" class="error-message">Chord not found</div>
     <div v-else class="chord-diagram">
       <OpenStrings :chord="chord" />
-      <Fretboard
-        v-if="chordInfo.fingers && chordInfo.fingers.length"
-        :chord="chord"
-        :chord-data="chordInfo"
-      />
+      <Fretboard v-if="chordInfo.fingers && chordInfo.fingers.length" :chord="chord" :chord-data="chordInfo" />
     </div>
   </div>
 </template>
@@ -37,7 +33,7 @@ const chordInfo = computed(() => getChordData(props.chord))
   border-radius: 8px;
   padding: 15px 25px 30px;
   text-align: center;
-  width: 150px;
+  width: 250px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }

@@ -1,88 +1,127 @@
-# Guitar Chord Sequence Visualizer
-
-A web-based tool that helps musicians visualize and create guitar chord progressions with interactive diagrams and fingering positions. Made this because referencing a static chord chart was incredibly inefficient and irritating when trying to learn even a simple chord progression.
-
-
-## Overview
-
-This application helps guitarists of all levels:
-- Visualize chord fingerings with clear, interactive diagrams
-- Create and arrange chord progressions
-- Learn proper finger placement for each chord
-- Experiment with different chord sequences
+# Guitar Chord Dictionary
+   
+A web application for exploring guitar chords, creating chord progressions, and saving your favorite sequences.
 
 ## Features
 
-### Interactive Chord Search
-- Real-time chord search functionality
-- Extensive chord library including major, minor, and 7th chords
-- Quick-add suggestions as you type
+- Search and visualize guitar chords with accurate fingering diagrams
+- Create and save custom chord progressions
+- User authentication system
+- Development mode for testing without a backend
 
-### Visual Chord Diagrams
-- Clear fretboard visualization
-- Color-coded finger positions
-- Open and muted string indicators
-- Finger position numbers for proper hand placement
+## Setup
 
-### Chord Sequence Management
-- Drag-and-drop chord reordering
-- One-click chord removal
-- Default starter progressions
-- Keyboard shortcuts for quick editing
+### Prerequisites
 
-### Finger Position Guide
-- Color-coded finger indicators:
-  - Index finger (Purple)
-  - Middle finger (Orange)
-  - Ring finger (Green)
-  - Pinky finger (Pink)
+- Node.js (v14 or higher)
+- PHP 7.4+ (for backend)
+- MySQL (for database)
 
-### User Interface
-- Clean, intuitive design
-- Responsive layout
-- Interactive help guide
-- Visual feedback for all actions
+### Installation
 
-## How to Use
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/chord-dictionary.git
+   cd chord-dictionary
+   ```
 
-1. **Search for Chords**
-   - Type chord names in the search bar (e.g., "Am", "G", "D7")
-   - Click suggestions to add them to your sequence
+2. Install frontend dependencies:
+   ```
+   npm install
+   ```
 
-2. **Arrange Your Progression**
-   - Drag chords to reorder them
-   - Click the '×' to remove a chord
-   - Use backspace to remove the last chord when the search is empty
+3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env` to match your environment
 
-3. **Learn Fingerings**
-   - Each diagram shows exact finger placement
-   - Reference the color guide for finger assignments
-   - Open circles (○) indicate open strings
-   - X marks indicate muted strings
+4. Set up the database:
+   - Create a MySQL database
+   - Import the schema from `backend/config/schema.sql`
+   - Update database credentials in `.env`
 
-4. **Access Help**
-   - Click the '?' button in the top right for the help guide
-   - Find detailed explanations of all symbols and controls
+5. Start the PHP development server for the backend:
+   ```
+   php -S localhost:8000 -t backend
+   ```
 
-## Keyboard Shortcuts
+6. Start the frontend development server:
+   ```
+   npm run dev
+   ```
 
-- `Enter`: Add the first suggested chord
-- `Backspace`: Remove the last chord (when search is empty)
-- `Escape`: Clear the search field
+7. Open your browser and navigate to `http://localhost:5173`
 
-## Browser Support
+## Environment Variables
 
-Tested and supported in:
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+The application uses environment variables for configuration. Create a `.env` file in the root directory with the following variables:
 
-## Coming Soon!
+```
+# App Environment
+VITE_APP_ENV=development
 
-- Save and share chord progressions
-- Audio playback of chord sequences
-- Alternative chord voicings
-- Custom chord creation
-- Mobile-optimized interface
-- Export to PDF/image
+# API Configuration
+VITE_API_URL=/backend
+
+# Database Configuration (for backend)
+VITE_DB_HOST=localhost
+VITE_DB_NAME=chord_dictionary
+VITE_DB_USER=your_db_username
+VITE_DB_PASS=your_db_password
+VITE_DB_SOCKET=/path/to/mysql/socket  # Optional, for socket connections
+
+# Authentication
+VITE_AUTH_SECRET=your_secret_key_here
+VITE_AUTH_EXPIRY=86400
+
+# Development Mode
+VITE_DEV_MODE=true
+```
+
+### Environment Variables Explanation
+
+- `VITE_APP_ENV`: The application environment (development, production)
+- `VITE_API_URL`: The base URL for API requests
+- `VITE_DB_HOST`: Database host (can include port, e.g., localhost:8889 for MAMP)
+- `VITE_DB_NAME`: Database name
+- `VITE_DB_USER`: Database username
+- `VITE_DB_PASS`: Database password
+- `VITE_DB_SOCKET`: Path to MySQL socket file (optional, for socket connections)
+- `VITE_AUTH_SECRET`: Secret key for authentication tokens
+- `VITE_AUTH_EXPIRY`: Token expiry time in seconds
+- `VITE_DEV_MODE`: Enable development mode features
+
+### Database Connection
+
+The application supports both TCP/IP and socket connections to MySQL:
+
+- **TCP/IP Connection**: Set `VITE_DB_HOST` to your database host, optionally with a port (e.g., `localhost:8889` for MAMP)
+- **Socket Connection**: Set `VITE_DB_SOCKET` to the path of your MySQL socket file
+
+#### Common Socket Paths
+
+- MAMP: `/Applications/MAMP/tmp/mysql/mysql.sock`
+- Default MySQL: `/tmp/mysql.sock` or `/var/run/mysqld/mysqld.sock`
+
+If you're using MAMP with the default configuration, use:
+
+```
+VITE_DB_HOST=localhost:8889
+VITE_DB_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
+```
+
+## Development Mode
+
+The application includes a development mode that allows you to test features without a backend. To enable development mode:
+
+1. Set `VITE_DEV_MODE=true` in your `.env` file
+2. Start the application with `npm run dev`
+3. Use the development mode toggle in the bottom left corner of the application
+
+In development mode, the application will:
+- Simulate API responses
+- Allow you to "log in" with any username/password
+- Save data to localStorage instead of a database
+
+## License
+
+MIT

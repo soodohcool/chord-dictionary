@@ -1,12 +1,7 @@
 <template>
   <div class="open-strings">
-    <div
-      v-for="stringNum in 6"
-      :key="'string-' + stringNum"
-      class="open-string"
-      :class="{ muted: isStringMuted(chord, stringNum) }"
-      :style="{ left: `${(6 - stringNum) * 20}%` }"
-    >
+    <div v-for="stringNum in 6" :key="'string-' + stringNum" class="open-string"
+      :class="{ muted: isStringMuted(chord, stringNum) }" :style="{ left: `${(6 - stringNum) * 20}%` }">
       <template v-if="isStringMuted(chord, stringNum)">✕</template>
       <template v-else-if="isOpenString(chord, stringNum)">○</template>
       <template v-else>&nbsp;</template>
