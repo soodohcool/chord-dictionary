@@ -9,6 +9,29 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
     },
+    {
+      path: '/selected',
+      name: 'selected',
+      component: HomeView,
+      props: { initialSection: 'selected' }
+    },
+    {
+      path: '/all',
+      name: 'all',
+      component: HomeView,
+      props: { initialSection: 'all' }
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: HomeView,
+      props: { initialSection: 'about' }
+    },
+    // Catch-all route for 404
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
   ],
 })
 

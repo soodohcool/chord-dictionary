@@ -3,7 +3,7 @@
         <div class="auth-container">
             <div class="auth-header">
                 <h2>{{ isLogin ? 'Login' : 'Register' }}</h2>
-                <button class="close-button" @click="$emit('close')">×</button>
+                <button class="btn-icon close-button" @click="$emit('close')">×</button>
             </div>
 
             <div class="auth-tabs">
@@ -38,10 +38,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="cancel-button" @click="$emit('close')">
+                    <button type="button" class="btn btn-light" @click="$emit('close')">
                         Cancel
                     </button>
-                    <button type="submit" class="submit-button" :disabled="isSubmitting">
+                    <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
                         {{ isSubmitting ? 'Processing...' : (isLogin ? 'Login' : 'Register') }}
                     </button>
                 </div>
@@ -224,9 +224,9 @@ const submitForm = async () => {
 }
 
 .auth-tabs button.active {
-    color: #2196f3;
+    color: var(--primary-color);
     font-weight: 500;
-    box-shadow: inset 0 -2px 0 #2196f3;
+    box-shadow: inset 0 -2px 0 var(--primary-color);
 }
 
 form {
@@ -250,13 +250,15 @@ form {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
-    height: 40px;
 }
 
 .error-message {
-    color: #f44336;
+    color: var(--danger-color);
     margin-bottom: 15px;
     font-size: 14px;
+    padding: 8px;
+    background-color: #ffebee;
+    border-radius: 4px;
 }
 
 .form-actions {
@@ -264,37 +266,5 @@ form {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
-}
-
-.cancel-button {
-    padding: 10px 16px;
-    background-color: #f5f5f5;
-    color: #555;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    height: 40px;
-}
-
-.submit-button {
-    padding: 10px 16px;
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    height: 40px;
-}
-
-.submit-button:hover {
-    background-color: #1976d2;
-}
-
-.submit-button:disabled {
-    background-color: #b0bec5;
-    cursor: not-allowed;
 }
 </style>

@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, provide } from 'vue'
 import AuthForm from './components/AuthForm.vue'
 import UserProfile from './components/UserProfile.vue'
+import UserAvatarMenu from './components/UserAvatarMenu.vue'
+import AvatarUploader from './components/AvatarUploader.vue'
 
 // Environment variables
 const apiUrl = import.meta.env.VITE_API_URL || '/backend'
@@ -13,6 +15,7 @@ const isLoggedIn = ref(false)
 const currentUser = ref(null)
 const showAuthForm = ref(false)
 const showUserProfile = ref(false)
+const showAvatarUploader = ref(false)
 const currentChords = ref([])
 const isDevelopmentMode = ref(devModeEnabled && import.meta.env.MODE === 'development')
 
@@ -161,6 +164,32 @@ const updateCurrentChords = (chords) => {
   currentChords.value = chords
 }
 
+/**
+ * Handle avatar update
+ * 
+ * @param {string} avatarUrl URL of the new avatar
+ */
+const handleAvatarUpdate = (avatarUrl) => {
+  if (currentUser.value) {
+    currentUser.value = {
+      ...currentUser.value,
+      avatar: avatarUrl
+    }
+
+    // Update in localStorage for development mode
+    if (isDevelopmentMode.value) {
+      localStorage.setItem('dev_user', JSON.stringify(currentUser.value))
+    }
+  }
+}
+
+/**
+ * Show the user profile
+ */
+const showProfile = () => {
+  showUserProfile.value = true
+}
+
 // Methods
 const toggleDevMode = () => {
   isDevelopmentMode.value = !isDevelopmentMode.value
@@ -176,7 +205,8 @@ const toggleDevMode = () => {
   <div class="app-container">
     <!-- Development Mode Toggle (only visible in development) -->
     <div v-if="isDevMode" class="dev-mode-toggle">
-      <button @click="toggleDevMode" :class="{ active: isDevelopmentMode }">
+      <button class="btn btn-sm" @click="toggleDevMode"
+        :class="{ 'btn-danger': isDevelopmentMode, 'btn-secondary': !isDevelopmentMode }">
         Dev Mode: {{ isDevelopmentMode ? 'ON' : 'OFF' }}
       </button>
     </div>
@@ -188,21 +218,30 @@ const toggleDevMode = () => {
 
     <!-- Main Content -->
     <div v-else>
-      <!-- User Actions -->
+      <!-- User Actions (top right) -->
       <div class="user-actions">
         <template v-if="isLoggedIn">
-          <button class="user-button" @click="showUserProfile = !showUserProfile">
-            <span class="user-initial">{{ userInitial }}</span>
+          <button class="avatar-button" @click="showUserProfile = !showUserProfile">
+            <span v-if="!currentUser.avatar" class="user-initial">{{ userInitial }}</span>
+            <img v-else :src="currentUser.avatar" alt="User avatar" class="user-avatar" />
           </button>
         </template>
         <template v-else>
-          <button class="login-button" @click="showAuthForm = true">Login / Register</button>
+          <button class="btn btn-primary" @click="showAuthForm = true">Login / Register</button>
         </template>
       </div>
 
       <!-- Router View (Main Content) -->
-      <router-view :is-logged-in="isLoggedIn" :current-user="currentUser" :current-chords="currentChords"
-        @update:current-chords="currentChords = $event" @login-required="showAuthForm = true" />
+      <router-view v-slot="{ Component }">
+        <component :is="Component" :is-logged-in="isLoggedIn" :current-user="currentUser"
+          :current-chords="currentChords" @update:current-chords="updateCurrentChords"
+          @login-required="showAuthForm = true">
+          <template #avatar-menu>
+            <UserAvatarMenu :user="currentUser" @logout="handleLogout" @view-profile="showProfile"
+              @update-avatar="showAvatarUploader = true" />
+          </template>
+        </component>
+      </router-view>
 
       <!-- Auth Form Modal -->
       <AuthForm v-if="showAuthForm" @close="showAuthForm = false" @login="handleLogin" @register="handleRegister" />
@@ -210,6 +249,10 @@ const toggleDevMode = () => {
       <!-- User Profile Modal -->
       <UserProfile v-if="showUserProfile && isLoggedIn" :user="currentUser" :current-chords="currentChords"
         @close="showUserProfile = false" @logout="handleLogout" @load-progression="handleLoadProgression" />
+
+      <!-- Avatar Uploader Modal -->
+      <AvatarUploader v-if="showAvatarUploader && isLoggedIn" @close="showAvatarUploader = false"
+        @update="handleAvatarUpdate" />
     </div>
   </div>
 </template>
@@ -259,32 +302,10 @@ const toggleDevMode = () => {
   z-index: 100;
 }
 
-.user-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.login-button {
-  padding: 8px 16px;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  height: 40px;
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dev-mode-toggle {
@@ -292,26 +313,5 @@ const toggleDevMode = () => {
   bottom: 20px;
   left: 20px;
   z-index: 1000;
-}
-
-.dev-mode-toggle button {
-  padding: 8px 12px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-  height: 32px;
-}
-
-.dev-mode-toggle button:hover {
-  opacity: 1;
-}
-
-.dev-mode-toggle button.active {
-  background-color: #4CAF50;
 }
 </style>

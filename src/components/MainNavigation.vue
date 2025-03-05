@@ -5,29 +5,40 @@
                 <h3>Navigation</h3>
                 <ul>
                     <li>
-                        <a href="#" @click.prevent="navigateTo('home')"
-                            :class="{ active: activeSection === 'home' }">Home</a>
+                        <router-link to="/" @click="closeNav" :class="{ active: activeSection === 'home' }">
+                            Home
+                        </router-link>
                     </li>
                     <li>
-                        <a href="#" @click.prevent="navigateTo('selected')"
-                            :class="{ active: activeSection === 'selected' }">Selected Chords</a>
+                        <router-link to="/selected" @click="closeNav" :class="{ active: activeSection === 'selected' }">
+                            Selected Chords
+                        </router-link>
                     </li>
                     <li>
-                        <a href="#" @click.prevent="navigateTo('all')" :class="{ active: activeSection === 'all' }">All
-                            Chords</a>
+                        <router-link to="/all" @click="closeNav" :class="{ active: activeSection === 'all' }">
+                            All Chords
+                        </router-link>
                     </li>
                     <li>
-                        <a href="#" @click.prevent="navigateTo('about')"
-                            :class="{ active: activeSection === 'about' }">About</a>
+                        <router-link to="/about" @click="closeNav" :class="{ active: activeSection === 'about' }">
+                            About
+                        </router-link>
                     </li>
                 </ul>
             </div>
         </transition>
-        <button class="nav-button" @click="toggleNav" :class="{ active: isNavVisible }"
-            aria-label="Toggle navigation menu">
-            <span v-if="isNavVisible">×</span>
-            <span v-else>☰</span>
-        </button>
+        <div class="nav-buttons">
+            <button class="btn btn-icon btn-primary nav-button" @click="toggleNav" :class="{ active: isNavVisible }"
+                aria-label="Toggle navigation menu">
+                <span v-if="isNavVisible">×</span>
+                <span v-else>☰</span>
+            </button>
+
+            <!-- Slot for user avatar menu -->
+            <div class="avatar-menu-slot">
+                <slot name="avatar-menu"></slot>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -49,6 +60,10 @@ const isNavVisible = ref(false)
 // Methods
 const toggleNav = () => {
     isNavVisible.value = !isNavVisible.value
+}
+
+const closeNav = () => {
+    isNavVisible.value = false
 }
 
 const navigateTo = (section) => {
@@ -113,34 +128,24 @@ const navigateTo = (section) => {
     font-weight: 500;
 }
 
-.nav-button {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #2196f3;
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
+.nav-buttons {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-        background-color 0.3s ease,
-        transform 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
-}
-
-.nav-button:hover {
-    background-color: #1976d2;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
 }
 
 .nav-button.active {
-    background-color: #f44336;
+    background-color: var(--danger-color);
     transform: rotate(90deg);
+}
+
+.nav-button.active:hover {
+    background-color: var(--danger-hover);
+}
+
+.avatar-menu-slot {
+    margin-top: 10px;
 }
 
 /* Slide transition */

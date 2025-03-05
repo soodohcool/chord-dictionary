@@ -1,12 +1,21 @@
 <template>
   <div class="buttons-container">
-    <MainNavigation :active-section="activeSection" @navigate="handleNavigation" />
+    <MainNavigation :active-section="activeSection" @navigate="handleNavigation">
+      <template v-if="isLoggedIn" #avatar-menu>
+        <slot name="avatar-menu"></slot>
+      </template>
+    </MainNavigation>
 
     <div class="help-container" :class="{ 'help-visible': isHelpVisible }">
       <transition name="slide">
         <HelpGuide class="help" v-if="isHelpVisible" />
       </transition>
-      <button class="help-button" @click="toggleHelp" :class="{ active: isHelpVisible }" aria-label="Toggle help guide">
+      <button
+        class="btn btn-icon btn-secondary help-button"
+        @click="toggleHelp"
+        :class="{ active: isHelpVisible }"
+        aria-label="Toggle help guide"
+      >
         <span v-if="isHelpVisible">×</span>
         <span v-else>?</span>
       </button>
@@ -14,30 +23,38 @@
   </div>
 
   <div class="home-container">
-    <h1>Guitar Chord Sequence Visualizer</h1>
+    <h1>Chords</h1>
 
     <div v-if="activeSection !== 'about'">
       <ChordInput v-model="selectedChords" />
 
       <div class="chord-actions" v-if="selectedChords.length > 0">
-        <button v-if="isLoggedIn" @click="showSaveForm = true" class="save-button">
+        <button v-if="isLoggedIn" @click="showSaveForm = true" class="btn btn-primary">
           Save Progression
         </button>
         <span v-else class="login-prompt">
-          <a href="#" @click.prevent="$emit('login-required')">Login</a> to save your chord progressions
+          <a href="#" @click.prevent="$emit('login-required')">Login</a> to save your chord
+          progressions
         </span>
       </div>
 
       <div class="chord-display-section">
-        <div v-if="selectedChords.length > 0 && (activeSection === 'home' || activeSection === 'selected')">
-          <h2 id="selected-chords-section">Selected Chords <span class="chord-count">({{ selectedChords.length }} of {{
-            totalChords }})</span></h2>
+        <div
+          v-if="
+            selectedChords.length > 0 && (activeSection === 'home' || activeSection === 'selected')
+          "
+        >
+          <h2 id="selected-chords-section">
+            Selected Chords
+            <span class="chord-count">({{ selectedChords.length }} of {{ totalChords }})</span>
+          </h2>
           <ChordSequenceDisplay :parsed-chords="selectedChords" />
         </div>
 
         <div class="all-chords-section" v-if="activeSection === 'home' || activeSection === 'all'">
-          <h2 id="all-chords-section">All Available Chords <span class="chord-count">({{ allChords.length }}
-              chords)</span></h2>
+          <h2 id="all-chords-section">
+            All Available Chords <span class="chord-count">({{ allChords.length }} chords)</span>
+          </h2>
           <ChordSequenceDisplay :parsed-chords="allChords" />
         </div>
       </div>
@@ -53,8 +70,13 @@
 
       <div class="form-group">
         <label for="progression-name">Name</label>
-        <input id="progression-name" v-model="progressionName" type="text" required
-          placeholder="Enter a name for this progression" />
+        <input
+          id="progression-name"
+          v-model="progressionName"
+          type="text"
+          required
+          placeholder="Enter a name for this progression"
+        />
       </div>
 
       <div class="form-group">
@@ -72,8 +94,12 @@
       </div>
 
       <div class="form-actions">
-        <button class="cancel-button" @click="showSaveForm = false">Cancel</button>
-        <button class="save-button" @click="saveProgression" :disabled="isSaving || !progressionName">
+        <button class="btn btn-light" @click="showSaveForm = false">Cancel</button>
+        <button
+          class="btn btn-primary"
+          @click="saveProgression"
+          :disabled="isSaving || !progressionName"
+        >
           {{ isSaving ? 'Saving...' : 'Save' }}
         </button>
       </div>
@@ -94,16 +120,20 @@ import { chordDictionary } from '../chordDictionary'
 const props = defineProps({
   isLoggedIn: {
     type: Boolean,
-    default: false
+    default: false,
   },
   currentUser: {
     type: Object,
-    default: null
+    default: null,
   },
   currentChords: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
+  initialSection: {
+    type: String,
+    default: 'home',
+  },
 })
 
 // Injected values
@@ -116,25 +146,37 @@ const emit = defineEmits(['update:current-chords', 'login-required'])
 // State
 const selectedChords = ref([]) // Empty by default
 const isHelpVisible = ref(false)
-const activeSection = ref('home')
+const activeSection = ref(props.initialSection)
 const showSaveForm = ref(false)
 const progressionName = ref('')
 const isPublic = ref(false)
 const isSaving = ref(false)
 
 // Sync with parent component's currentChords
-watch(() => props.currentChords, (newChords) => {
-  if (newChords && newChords.length && JSON.stringify(newChords) !== JSON.stringify(selectedChords.value)) {
-    selectedChords.value = [...newChords]
-  }
-}, { immediate: true })
+watch(
+  () => props.currentChords,
+  (newChords) => {
+    if (
+      newChords &&
+      newChords.length &&
+      JSON.stringify(newChords) !== JSON.stringify(selectedChords.value)
+    ) {
+      selectedChords.value = [...newChords]
+    }
+  },
+  { immediate: true },
+)
 
 // Update parent when selectedChords changes
-watch(selectedChords, (newChords) => {
-  if (JSON.stringify(newChords) !== JSON.stringify(props.currentChords)) {
-    emit('update:current-chords', [...newChords])
-  }
-}, { deep: true })
+watch(
+  selectedChords,
+  (newChords) => {
+    if (JSON.stringify(newChords) !== JSON.stringify(props.currentChords)) {
+      emit('update:current-chords', [...newChords])
+    }
+  },
+  { deep: true },
+)
 
 // Computed property to get all available chords
 const allChords = computed(() => {
@@ -194,14 +236,14 @@ const saveProgression = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Accept: 'application/json',
       },
       body: JSON.stringify({
         name: progressionName.value,
         chords: selectedChords.value,
-        is_public: isPublic.value
+        is_public: isPublic.value,
       }),
-      credentials: 'include' // Include cookies in the request
+      credentials: 'include', // Include cookies in the request
     })
 
     // Check if response is JSON
@@ -233,6 +275,22 @@ const saveProgression = async () => {
     isSaving.value = false
   }
 }
+
+// Set initial active section from route prop
+onMounted(() => {
+  activeSection.value = props.initialSection
+})
+
+// Watch for changes to initialSection prop
+watch(
+  () => props.initialSection,
+  (newSection) => {
+    if (newSection) {
+      activeSection.value = newSection
+    }
+  },
+  { immediate: true },
+)
 
 // Watch for changes in the URL hash to update the active section
 onMounted(() => {
@@ -314,8 +372,12 @@ watch(activeSection, (newSection) => {
 }
 
 .help-button.active {
-  background-color: #f44336;
+  background-color: var(--danger-color);
   transform: rotate(90deg);
+}
+
+.help-button.active:hover {
+  background-color: var(--danger-hover);
 }
 
 /* Slide transition */
@@ -333,7 +395,7 @@ watch(activeSection, (newSection) => {
 }
 
 .home-container {
-  max-width: 900px;
+  max-width: 1160px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -448,7 +510,7 @@ h2 {
   color: #555;
 }
 
-.form-group input[type="text"] {
+.form-group input[type='text'] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;

@@ -3,8 +3,8 @@
         <div class="profile-header">
             <h2>My Profile</h2>
             <div class="header-actions">
-                <button class="logout-button" @click="handleLogout">Logout</button>
-                <button class="close-button" @click="$emit('close')">×</button>
+                <button class="btn btn-danger" @click="handleLogout">Logout</button>
+                <button class="btn btn-icon close-button" @click="$emit('close')">×</button>
             </div>
         </div>
 
@@ -19,7 +19,7 @@
         <div class="saved-progressions">
             <div class="section-header">
                 <h3>My Saved Progressions</h3>
-                <button class="new-progression-button" @click="showSaveForm = true">
+                <button class="btn btn-primary" @click="showSaveForm = true">
                     <span class="icon">+</span> New Progression
                 </button>
             </div>
@@ -28,7 +28,7 @@
 
             <div v-else-if="progressions.length === 0" class="empty-state">
                 <p>You haven't saved any chord progressions yet.</p>
-                <button @click="showSaveForm = true">Save Current Progression</button>
+                <button class="btn btn-primary" @click="showSaveForm = true">Save Current Progression</button>
             </div>
 
             <div v-else class="progressions-list">
@@ -48,9 +48,9 @@
                         </div>
                     </div>
                     <div class="progression-actions">
-                        <button class="load-button" @click="loadProgression(progression)">Load</button>
-                        <button class="edit-button" @click="editProgression(progression)">Edit</button>
-                        <button class="delete-button" @click="confirmDelete(progression)">Delete</button>
+                        <button class="btn btn-sm btn-primary" @click="loadProgression(progression)">Load</button>
+                        <button class="btn btn-sm btn-light" @click="editProgression(progression)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @click="confirmDelete(progression)">Delete</button>
                     </div>
                 </div>
             </div>
@@ -82,8 +82,9 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="cancel-button" @click="cancelSaveForm">Cancel</button>
-                    <button class="save-button" @click="saveProgression" :disabled="isSaving || !progressionForm.name">
+                    <button class="btn btn-light" @click="cancelSaveForm">Cancel</button>
+                    <button class="btn btn-primary" @click="saveProgression"
+                        :disabled="isSaving || !progressionForm.name">
                         {{ isSaving ? 'Saving...' : (editMode ? 'Update' : 'Save') }}
                     </button>
                 </div>
@@ -94,12 +95,12 @@
         <div v-if="showDeleteConfirm" class="modal-overlay" @click.self="showDeleteConfirm = false">
             <div class="modal-content delete-confirm">
                 <h3>Delete Progression</h3>
-                <p>Are you sure you want to delete "<strong>{{ progressionToDelete?.name }}</strong>"?</p>
+                <p>Are you sure you want to delete <strong>{{ progressionToDelete?.name }}</strong>?</p>
                 <p class="warning">This action cannot be undone.</p>
 
                 <div class="form-actions">
-                    <button class="cancel-button" @click="showDeleteConfirm = false">Cancel</button>
-                    <button class="delete-button" @click="deleteProgression" :disabled="isDeleting">
+                    <button class="btn btn-light" @click="showDeleteConfirm = false">Cancel</button>
+                    <button class="btn btn-danger" @click="deleteProgression" :disabled="isDeleting">
                         {{ isDeleting ? 'Deleting...' : 'Delete' }}
                     </button>
                 </div>
@@ -474,22 +475,23 @@ const deleteProgression = async () => {
 .user-profile {
     position: fixed;
     top: 0;
+    left: 0;
     right: 0;
     bottom: 0;
-    width: 450px;
-    /* Adjusted width to account for padding */
-    background-color: #f9f9f9;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
+    background-color: white;
     z-index: 1000;
-    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .profile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background-color: #f5f5f5;
 }
 
 .profile-header h2 {
@@ -500,65 +502,32 @@ const deleteProgression = async () => {
 .header-actions {
     display: flex;
     gap: 10px;
-    align-items: center;
-}
-
-.logout-button {
-    padding: 8px 16px;
-    background-color: #f5f5f5;
-    color: #555;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.logout-button:hover {
-    background-color: #e0e0e0;
 }
 
 .close-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    color: #555;
-    font-size: 20px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.close-button:hover {
-    background-color: #e0e0e0;
+    font-size: 24px;
+    color: #999;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
     padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #eee;
 }
 
 .avatar {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: #2196f3;
+    background-color: var(--primary-color);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     font-weight: bold;
-    margin-right: 20px;
+    margin-right: 15px;
 }
 
 .details h3 {
@@ -571,11 +540,17 @@ const deleteProgression = async () => {
     color: #666;
 }
 
+.saved-progressions {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .section-header h3 {
@@ -583,66 +558,25 @@ const deleteProgression = async () => {
     color: #333;
 }
 
-.new-progression-button {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.new-progression-button:hover {
-    background-color: #1976d2;
-}
-
-.new-progression-button .icon {
-    margin-right: 5px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
 .loading {
     text-align: center;
-    padding: 20px;
     color: #666;
+    padding: 20px;
 }
 
 .empty-state {
     text-align: center;
     padding: 30px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: #666;
 }
 
 .empty-state p {
     margin-bottom: 15px;
-    color: #666;
-}
-
-.empty-state button {
-    padding: 10px 20px;
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.empty-state button:hover {
-    background-color: #1976d2;
 }
 
 .progressions-list {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
 }
 
@@ -651,9 +585,10 @@ const deleteProgression = async () => {
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background-color: white;
+    border: 1px solid #eee;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .progression-info {
@@ -673,17 +608,18 @@ const deleteProgression = async () => {
 }
 
 .chord-tag {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     padding: 4px 8px;
     background-color: #e3f2fd;
     color: #1976d2;
     border-radius: 16px;
     font-size: 12px;
+    font-weight: 500;
 }
 
 .progression-meta {
     display: flex;
-    align-items: center;
     gap: 10px;
     font-size: 12px;
     color: #777;
@@ -691,8 +627,8 @@ const deleteProgression = async () => {
 
 .visibility {
     padding: 2px 6px;
+    border-radius: 10px;
     background-color: #f5f5f5;
-    border-radius: 4px;
 }
 
 .visibility.public {
@@ -703,42 +639,6 @@ const deleteProgression = async () => {
 .progression-actions {
     display: flex;
     gap: 8px;
-}
-
-.progression-actions button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.load-button {
-    background-color: #2196f3;
-    color: white;
-}
-
-.load-button:hover {
-    background-color: #1976d2;
-}
-
-.edit-button {
-    background-color: #f5f5f5;
-    color: #555;
-}
-
-.edit-button:hover {
-    background-color: #e0e0e0;
-}
-
-.delete-button {
-    background-color: #ffebee;
-    color: #d32f2f;
-}
-
-.delete-button:hover {
-    background-color: #ffcdd2;
 }
 
 /* Modal styles */
@@ -823,35 +723,6 @@ const deleteProgression = async () => {
     margin-top: 20px;
 }
 
-.cancel-button {
-    padding: 8px 16px;
-    background-color: #f5f5f5;
-    color: #555;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    height: 40px;
-    /* Explicitly set height to account for box-sizing */
-}
-
-.save-button {
-    padding: 8px 16px;
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    height: 40px;
-    /* Explicitly set height to account for box-sizing */
-}
-
-.save-button:disabled {
-    background-color: #b0bec5;
-    cursor: not-allowed;
-}
-
 /* Delete confirmation */
 .delete-confirm p {
     margin-bottom: 10px;
@@ -859,7 +730,7 @@ const deleteProgression = async () => {
 }
 
 .delete-confirm .warning {
-    color: #d32f2f;
+    color: var(--danger-color);
     font-size: 14px;
 }
 </style>
